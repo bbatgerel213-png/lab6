@@ -11,7 +11,11 @@ static void sink(Heap *p, int);
 int less(const Msg *a, const Msg *b)
 {
         // Зэрэглэл бага бол илүү чухал
-        return a->priority > b->priority;
+        if (a->priority != b->priority)
+                return a->priority > b->priority;
+
+        // Зэрэглэл тэнцүү бол эрт орсон (time бага) нь илүү чухал
+        return a->time > b->time;
 }
 
 /*
