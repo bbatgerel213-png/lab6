@@ -10,7 +10,8 @@ static void sink(Heap *p, int);
 */
 int less(const Msg *a, const Msg *b)
 {
-        // Энд жиших үйлдийг хийнэ
+        // Зэрэглэл бага бол илүү чухал
+        return a->priority > b->priority;
 }
 
 /*
@@ -20,7 +21,12 @@ int less(const Msg *a, const Msg *b)
  */
 void insert(Heap *p, const Msg x)
 {
-        // Энд оруулах үйлдлийг хийнэ
+        // 1-ээс эхэлсэн индекстэй хүснэгтэд хамгийн төгсгөлд нь нэмнэ
+        p->h_len = p->h_len + 1;
+        p->h_arr[p->h_len] = x;
+
+        // Heap зарчим алдагдаж болзошгүй тул дээшээ "сэлнэ"
+        swim(p, p->h_len);
 }
 
 /*
@@ -29,7 +35,17 @@ void insert(Heap *p, const Msg x)
  */
 static void swim(Heap *p, int k)
 {
-        // Энд swim үйлдлийг хийнэ
+        Msg tmp;
+
+        // Эцэг нь хүүхдээсээ бага чухал бол (өөрөөр хэлбэл хүүхэд илүү
+        // чухал бол) хоёрыг нь сольж, дээшээ үргэлжлүүлнэ
+        while (k > 1 && less(&p->h_arr[k / 2], &p->h_arr[k])) {
+                tmp = p->h_arr[k / 2];
+                p->h_arr[k / 2] = p->h_arr[k];
+                p->h_arr[k] = tmp;
+
+                k = k / 2;
+        }
 }
 
 /*
@@ -38,7 +54,27 @@ static void swim(Heap *p, int k)
  */
 static void sink(Heap *p, int k)
 {
-        // Энд sink үйлдлийг хийнэ
+        int j;
+        Msg tmp;
+
+        // Доошоо "живж" байх хугацаандаа хамгийн чухал хүүхдээ сонгон солино
+        while (2 * k <= p->h_len) {
+                j = 2 * k;
+
+                // Баруун хүүхэд байгаа бөгөөд зүүнээсээ илүү чухал бол
+                if (j < p->h_len && less(&p->h_arr[j], &p->h_arr[j + 1]))
+                        j = j + 1;
+
+                // Эцэг нь хамгийн чухал хүүхдээсээ чухал (эсвэл тэнцүү) бол зогсоно
+                if (!less(&p->h_arr[k], &p->h_arr[j]))
+                        break;
+
+                tmp = p->h_arr[k];
+                p->h_arr[k] = p->h_arr[j];
+                p->h_arr[j] = tmp;
+
+                k = j;
+        }
 }
 
 /*
@@ -47,6 +83,16 @@ static void sink(Heap *p, int k)
  */
 Msg delMin(Heap *p)
 {
-        // Энд хамгийн багыг гаргах үйлдлийг хийнэ
+        Msg min = p->h_arr[1];  // оройн (хамгийн чухал) зурвас
+
+        // Сүүлийн элементийг оройд тавиад, уртыг багасгана
+        p->h_arr[1] = p->h_arr[p->h_len];
+        p->h_len = p->h_len - 1;
+
+        // Оройн элементээр heap зарчмыг сэргээнэ
+        if (p->h_len > 0)
+                sink(p, 1);
+
+        return min;
 }
 
